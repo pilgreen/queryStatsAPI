@@ -13,36 +13,39 @@ import (
   "time"
 )
 
+var Config struct {
+  Key string
+  Secret string
+  Endpoint string
+}
+
 func main() {
-  // Primary Variables
-  key := os.Getenv("STATS_KEY")
-  secret := os.Getenv("STATS_SECRET")
-  now := time.Now()
-
-  if(len(key) == 0 || len(secret) == 0) {
-    log.Fatal("STATS_KEY and STATS_SECRET environment variables are not set")
-  }
-
-  // Endpoint Flag
-  var endpoint string
-  flag.StringVar(&endpoint, "endpoint", "REQUIRED", "the url endpoint for the API call")
+  flag.StringVar(&Config.Key, "key", os.Getenv("STATS_KEY"), "Stats API key")
+  flag.StringVar(&Config.Secret, "secret", os.Getenv("STATS_SECRET"), "Stats API secret")
+  flag.StringVar(&Config.Endpoint, "endpoint", "", "Stats API endpoint")
   flag.Parse()
 
-  if endpoint == "REQUIRED" {
+  args := flag.Args()
+  if len(Config.Endpoint) == 0 && len(args) > 0 {
+    Config.Endpoint = args[0]
+  }
+
+  if len(Config.Key) == 0 || len(Config.Secret) == 0 || len(Config.Endpoint) == 0 {
     flag.Usage()
     os.Exit(1)
   }
 
   // Start the process
-  sig := fmt.Sprintf("%s%s%d", key, secret, now.Unix())
+  now := time.Now()
+  sig := fmt.Sprintf("%s%s%d", Config.Key, Config.Secret, now.Unix())
   sigsum := sha256.Sum256([]byte(sig))
 
-  urlString := fmt.Sprintf("http://api.stats.com/v1/stats/%s", strings.Trim(endpoint, "/"))
+  urlString := fmt.Sprintf("http://api.stats.com/v1/stats/%s", strings.Trim(Config.Endpoint, "/"))
   u, _ := url.Parse(urlString)
 
   q := u.Query()
   q.Add("accept", "json")
-  q.Add("api_key", key)
+  q.Add("api_key", Config.Key)
   q.Add("sig", fmt.Sprintf("%x", sigsum))
   u.RawQuery = q.Encode()
 

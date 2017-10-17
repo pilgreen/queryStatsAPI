@@ -1,17 +1,15 @@
 # queryStatsAPI
 A simple program to build the correct signature to make queries to the STATS API.
 
-## Environment variables
+## Flags
 
-In order to use this program, you need to set environment variables for your key and secret. 
+**key** -- your Stats API key
 
-To do so in a single command you can use:
+**secret** -- your Stats API secret
 
-```
-env STATS_KEY=xxx STATS_SECRET=xxx queryStatsApi -endpoint {YOUR ENDPOINT}
-```
+**endpoint** -- the API endpoint you would like to retrieve
 
-I use Makefiles to build more than one part of a site at a time with the following pattern:
+The endpoint flag will take the first positional argument as well. You can also pass in the key and secret using environment variables. This is handy when multiple calls need to be made in a Makefile or another similar situation.
 
 ```
 stats: export STATS_KEY=xxx
